@@ -31,7 +31,7 @@ Qth = -Fth/(ma*om^2*r*cos(f));
 Qf  = -Ff /(ma*om^2*r);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
 Qr  = -Fr /(ma*om^2);
 
-syms T ma om r0 dr0
+syms T % ma om r0 dr0
 
 lmbd = T/(ma*om^2*r);
 
@@ -82,7 +82,7 @@ J.algebraic = simplify(subs(J.algebraic, x_0, point));
 % J.algebraic
 
 % linsys = J.algebraic * transpose(x - x_0);
-linsys = J.algebraic * transpose(x - point);
+linsys = subs(f, x_, point) + J.algebraic * transpose(x - point);
 
 eqns = subs(linsys, x, x_) == 0;
 
@@ -192,11 +192,21 @@ return
 %}
 
 %% search for unknown constants
-
 sys = subs(nhss, t, 0) == point.';
-pretty(vpa(sys, 3))
 sol = solve(sys, C);
 sol = struct2cell(sol);
 sol = [sol{1:6}];
-sol = sol.'
+sol = sol.';
 
+%% final solution
+finsol = simplify(subs(nhss, C.', sol));
+
+% verifying result
+%{
+dfinsol = diff(finsol, t);
+fin_sys = dfinsol - A*finsol + b;
+disp("Verification finsol")
+v = vpa(simplify(fin_sys), 3);
+pretty(v)
+return
+%}
